@@ -1,0 +1,14 @@
+# Ignorar directorios principales
+matlab_scripts/
+P4_TDVA/
+P4_TDVA_P39/
+python_scripts_gen2/
+visqol2/
+
+# Ignorar subdirectorios específicos dentro de python_scripts_gen2e
+python_scripts_gen2e/__pycache__/
+python_scripts_gen2e/inputs/
+python_scripts_gen2e/models/
+python_scripts_gen2e/outputs/
+python_scripts_gen2e/P4_TDVA_sinCUDA/
+python_scripts_gen2e/waterdrop_billinear/
