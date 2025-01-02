@@ -5,6 +5,7 @@ P4_TDVA_P39/
 python_scripts_gen2/
 visqol2/
 .git/hooks/
+.git_backup
 *.tmp
 *.swp
 *.bak

@@ -1,0 +1,2 @@
+
+ EPOCH 1/300 	 train loss 3713.157 (recon error 3713.157, kl error 0.000) 	
