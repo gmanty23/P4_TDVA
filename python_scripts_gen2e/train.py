@@ -14,7 +14,7 @@ torch.set_default_dtype(torch.float32)
 
 torch.manual_seed(0)
 
-modelo = "model2" # Model to be trained
+modelo = "model1" # Model to be trained
 
 if modelo == "model1":
     latent_dims = 20
@@ -160,4 +160,4 @@ for epoch in range(num_epochs):
                                                                                                               val_loss)) """
     
 
-#torch.save(vae.state_dict(), f"python_scripts_gen2e/models/"+modelo+"/model.pth")
+torch.save(vae.state_dict(), f"python_scripts_gen2e/models/"+modelo+"/model.pth")

@@ -77,8 +77,8 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
     # Guardado de archivos generados 
     name = os.path.split(name)[-1] + ".wav"
     #save_path = os.path.join("outputs", modelo, predecir, name)
-    save_path = os.path.join("python_scripts_gen2e/outputs/felizJueves", predecir, name)
-
+    save_path = os.path.join(r'python_scripts_gen2e\outputs\model1\felizJueves\test', name)
+    #save_path = r'python_scripts_gen2e\outputs\model1\felizJueves\test'
     sf.write(save_path, signal, 48000)
 
 
