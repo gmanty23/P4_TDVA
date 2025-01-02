@@ -12,18 +12,29 @@ class VariationalEncoder(nn.Module):
     def __init__(self, latent_dim):
         super(VariationalEncoder, self).__init__() # Llamamos al constructor del padre (clase nn.Module) // Repetir pregunta: parámetros de super()
 
-        # encoder
+        # # encoder
+        # self.conv1 = nn.Conv2d(in_channels=2*2, out_channels=512*2, kernel_size=(5, 5), stride=(2, 2)) # Voy a concatenar los datos de entrada en la dimension de bines de frecuencia (512->1024)... a ver qué tal!
+        # self.batch1 = nn.BatchNorm2d(512*2) # BatchNorm2d => Preguntar por la expresión de la documentación de PyTorch
+        # self.conv2 = nn.Conv2d(in_channels=512*2, out_channels=256*2, kernel_size=(3, 3), stride=(2, 2))
+        # self.batch2 = nn.BatchNorm2d(256*2)
+        # self.conv3 = nn.Conv2d(in_channels=256*2, out_channels=128*2, kernel_size=(3, 3), stride=(2, 2))
+        # self.batch3 = nn.BatchNorm2d(128*2)
+        # self.conv4 = nn.Conv2d(in_channels=128*2, out_channels=64*2, kernel_size=(2, 2), stride=(2, 2))
+        # self.batch4 = nn.BatchNorm2d(64*2)
+        # self.conv5 = nn.Conv2d(in_channels=64*2, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
+        # self.batch5 = nn.BatchNorm2d(32*2)
+        # self.conv6 = nn.Conv2d(in_channels=32*2, out_channels=32, kernel_size=(1, 1), stride=(1, 1))
+
+        #OJO - recurrent encoder
         self.conv1 = nn.Conv2d(in_channels=2*2, out_channels=512*2, kernel_size=(5, 5), stride=(2, 2)) # Voy a concatenar los datos de entrada en la dimension de bines de frecuencia (512->1024)... a ver qué tal!
         self.batch1 = nn.BatchNorm2d(512*2) # BatchNorm2d => Preguntar por la expresión de la documentación de PyTorch
         self.conv2 = nn.Conv2d(in_channels=512*2, out_channels=256*2, kernel_size=(3, 3), stride=(2, 2))
         self.batch2 = nn.BatchNorm2d(256*2)
         self.conv3 = nn.Conv2d(in_channels=256*2, out_channels=128*2, kernel_size=(3, 3), stride=(2, 2))
         self.batch3 = nn.BatchNorm2d(128*2)
-        self.conv4 = nn.Conv2d(in_channels=128*2, out_channels=64*2, kernel_size=(2, 2), stride=(2, 2))
-        self.batch4 = nn.BatchNorm2d(64*2)
-        self.conv5 = nn.Conv2d(in_channels=64*2, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
-        self.batch5 = nn.BatchNorm2d(32*2)
-        self.conv6 = nn.Conv2d(in_channels=32*2, out_channels=32, kernel_size=(1, 1), stride=(1, 1))
+
+        self.flatten = nn.Flatten() #como no podemos asegurar que mantenga la secuencialidad en las muestras tras haber pasado
+        self.lstm = nn.LSTM(input_size=256 * 62 *6, hidden_size = 32 * 31 * 3, num_layers = 3, batch_first=True)
 
         # distribution parameters
         self.mu = nn.Linear(32 * 31 * 3, latent_dim)
@@ -36,12 +47,23 @@ class VariationalEncoder(nn.Module):
 
     def forward(self, x):
         x = x.to(device)
+        
+        # x = F.relu(self.batch1(self.conv1(x))) # Capa 1
+        # x = F.relu(self.batch2(self.conv2(x))) # Capa 2
+        # x = F.relu(self.batch3(self.conv3(x))) # Capa 3
+        # x = F.relu(self.batch4(self.conv4(x))) # Capa 4
+        # x = F.relu(self.batch5(self.conv5(x))) # Capa 5
+        # x = self.conv6(x)                      # Capa 6 
+
         x = F.relu(self.batch1(self.conv1(x))) # Capa 1
         x = F.relu(self.batch2(self.conv2(x))) # Capa 2
         x = F.relu(self.batch3(self.conv3(x))) # Capa 3
-        x = F.relu(self.batch4(self.conv4(x))) # Capa 4
-        x = F.relu(self.batch5(self.conv5(x))) # Capa 5
-        x = self.conv6(x)                      # Capa 6 
+
+        x = self.flatten(x)  # Aplanar para la LSTM
+        x = x.unsqueeze(1)  # Añadir una dimensión "secuencial" ficticia (secuencia única)
+        x, _ = self.lstm(x)  # Pasar por LSTM
+        x = x.squeeze(1)  # Quitar la dimensión "secuencial" después de la LSTM
+
         x = torch.flatten(x, start_dim=1) # Convertimos a un vector unidimensional
         mu = self.mu(x)                        # Capa '7'
         sigma = torch.exp(self.var(x)).to(device)
@@ -64,39 +86,55 @@ class Decoder(nn.Module):
     def __init__(self, latent_dims):
         super().__init__()
 
-        self.decoder_lin = nn.Sequential( # Asumo que nn.Sequential() define una serie de funciones que se aplicarán una tras otra 
-            nn.Linear(latent_dims, 128),
-            nn.ReLU(True), # ¿Qué significa el parámetro True en esta función ReLU?
-            nn.Linear(128, 32 * 31 * 3),
+        # self.decoder_lin = nn.Sequential( # Asumo que nn.Sequential() define una serie de funciones que se aplicarán una tras otra 
+        #     nn.Linear(latent_dims, 128),
+        #     nn.ReLU(True), # ¿Qué significa el parámetro True en esta función ReLU?
+        #     nn.Linear(128, 32 * 31 * 3),
+        #     nn.ReLU(True)
+        # )
+
+        # Fully connected layers to reshape the latent vector
+        self.decoder_lin = nn.Sequential(
+            nn.Linear(latent_dims, 32 * 31 * 3),
             nn.ReLU(True)
         )
 
-        self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 3))
+        self.lstm = nn.LSTM(input_size=32 * 31 * 3, hidden_size=256 * 62 * 6, num_layers=3, batch_first=True)
 
-        self.dec0 = nn.ConvTranspose2d(in_channels=32, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
-        self.batch0 = nn.BatchNorm2d(32*2)
-        self.dec1 = nn.ConvTranspose2d(in_channels=32*2, out_channels=64*2, kernel_size=(1, 1), stride=(1, 1)) # ¿ConvTranspose2d?
-        self.batch1 = nn.BatchNorm2d(64*2)
-        self.dec2 = nn.ConvTranspose2d(in_channels=64*2, out_channels=128*2, kernel_size=(2, 2), stride=(2, 2))
-        self.batch2 = nn.BatchNorm2d(128*2)
-        self.dec3 = nn.ConvTranspose2d(in_channels=128*2, out_channels=256*2, kernel_size=(3, 3), stride=(2, 2), output_padding=1)
-        self.batch3 = nn.BatchNorm2d(256*2)
-        self.dec4 = nn.ConvTranspose2d(in_channels=256*2, out_channels=512*2, kernel_size=(3, 3), stride=(2, 2), output_padding=1)
-        self.batch4 = nn.BatchNorm2d(512*2)
-        self.dec5 = nn.ConvTranspose2d(in_channels=512*2, out_channels=2*2, kernel_size=(5, 5), stride=(2, 2), output_padding=1)
+        self.unflatten = nn.Unflatten(dim=1, unflattened_size=(128*2, 62, 6))
+
+        self.dec0 = nn.ConvTranspose2d(in_channels=128*2, out_channels=256*2, kernel_size=(3, 3), stride=(2, 2), output_padding=1)
+        self.batch0 = nn.BatchNorm2d(256*2)
+        self.dec1 = nn.ConvTranspose2d(in_channels=256*2, out_channels=512*2, kernel_size=(3, 3), stride=(2, 2), output_padding=1)
+        self.batch1 = nn.BatchNorm2d(512*2)
+        self.dec2 = nn.ConvTranspose2d(in_channels=512*2, out_channels=2*2, kernel_size=(5, 5), stride=(2, 2), output_padding=1)
 
     def forward(self, x):
+        # x = self.decoder_lin(x)
+        # x = self.unflatten(x)
+        # x = F.relu(self.batch0(self.dec0(x)))
+        # x = F.relu(self.batch1(self.dec1(x)))
+        # x = F.relu(self.batch2(self.dec2(x)))
+        # x = F.relu(self.batch3(self.dec3(x)))
+        # x = F.relu(self.batch4(self.dec4(x)))
+        # x = self.dec5(x)
+        # x = torch.sigmoid(x) # ¿Y esta última función de activación? ¿Es acaso para normalizar el resultado?
+        # return x
+
         x = self.decoder_lin(x)
+
+        x = x.unsqueeze(1) #Añadimos artificialmente la dimension de seq_length
+        x, _ = self.lstm(x)
+        x = x.squeeze(1)
         x = self.unflatten(x)
+
         x = F.relu(self.batch0(self.dec0(x)))
         x = F.relu(self.batch1(self.dec1(x)))
-        x = F.relu(self.batch2(self.dec2(x)))
-        x = F.relu(self.batch3(self.dec3(x)))
-        x = F.relu(self.batch4(self.dec4(x)))
-        x = self.dec5(x)
-        x = torch.sigmoid(x) # ¿Y esta última función de activación? ¿Es acaso para normalizar el resultado?
-        return x
+        x = self.dec2(x)
 
+        x = torch.sigmoid(x)
+
+        return x
 
 class VariationalAutoencoder(nn.Module):
     def __init__(self, latent_dims):

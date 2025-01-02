@@ -160,4 +160,4 @@ for epoch in range(num_epochs):
                                                                                                               val_loss)) """
     
 
-#torch.save(vae.state_dict(), f"python_scripts_gen2e/models/"+modelo+"/model.pth")
+torch.save(vae.state_dict(), f"python_scripts_gen2e/models/"+modelo+"/model.pth")
