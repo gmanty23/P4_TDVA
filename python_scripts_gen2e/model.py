@@ -81,21 +81,15 @@ class Decoder(nn.Module):
     def __init__(self, latent_dims):
         super().__init__()
 
-        # Capa lineal para reconstruir la salida de la LSTM
-        self.decoder_lin = nn.Sequential( # Asumo que nn.Sequential() define una serie de funciones que se aplicarán una tras otra 
-            nn.Linear(latent_dims, 128),
-            nn.ReLU(True), # ¿Qué significa el parámetro True en esta función ReLU?
-            nn.Linear(128, 2*2*512*57),
-            nn.ReLU(True)
-        )
+        # # Capa lineal para reconstruir la salida de la LSTM
+        # self.decoder_lin = nn.Sequential( # Asumo que nn.Sequential() define una serie de funciones que se aplicarán una tras otra 
+        #     nn.Linear(latent_dims, 128),
+        #     nn.ReLU(True), # ¿Qué significa el parámetro True en esta función ReLU?
+        #     nn.Linear(128, 2*2*512*57),
+        #     nn.ReLU(True)
+        # )
 
-        # Capa LSTM para procesar la representación latente
-        self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
-
-        # Capa lineal para expandir la salida del LSTM con las dimensiones originales
-        self.hidden_to_output = nn.Linear(256, 4*512*64)
-
-        # self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 3))
+         # self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 3))
 
         # self.dec0 = nn.ConvTranspose2d(in_channels=32, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
         # self.batch0 = nn.BatchNorm2d(32*2)
@@ -108,6 +102,25 @@ class Decoder(nn.Module):
         # self.dec4 = nn.ConvTranspose2d(in_channels=256*2, out_channels=512*2, kernel_size=(3, 3), stride=(2, 2), output_padding=1)
         # self.batch4 = nn.BatchNorm2d(512*2)
         # self.dec5 = nn.ConvTranspose2d(in_channels=512*2, out_channels=2*2, kernel_size=(5, 5), stride=(2, 2), output_padding=1)
+
+        # Capa LSTM para procesar la representación latente
+        self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
+
+        # Capa lineal para mapear a un tensor inicial interpretable
+        self.lin = nn.Linear(256, 512 * 32 * 8)  # Salida inicial: (512 canales, 32x8 tamaño)
+        # Decodificación con convoluciones transpuestas
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1),  # (32x8) -> (64x16)
+            nn.ReLU(),
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),  # (64x16) -> (128x32)
+            nn.ReLU(),
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),   # (128x32) -> (256x64)
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 4, kernel_size=(4,3), stride=(2,1), padding=1)  # (256x64) -> (512x64)
+        )
+
+
+       
 
     def forward(self, x):
         # x = self.decoder_lin(x)
@@ -122,23 +135,20 @@ class Decoder(nn.Module):
         # return x
 
         # x tiene la forma (batch_size, latent_dim), necesitamos convertirlo en una secuencia de longitud 57.
-        x = x.unsqueeze(1) # Añadir una dimensión de secuencia (batch_size, 1, latent_dim)
+
+        # Añadir una dimensión de secuencia
+        x = x.unsqueeze(1) #(batch_size, 1, latent_dim)
         
-    
-        lstm_out, _ = self.lstm(x) # Pasamos el vector latente por el LSTM
+        # Pasar por el LSTM
+        lstm_out, _ = self.lstm(x)  # lstm_out: (batch_size, seq_len=1, hidden_size=256)
         lstm_out = lstm_out[:, -1, :]  # Seleccionamos la última salida de la secuencia (batch_size, hidden_size)   
 
-        # Pasar por la capa lineal para proyectar a la dimensión total
-        x = self.hidden_to_output(lstm_out)    # (batch_size, 4 * 512 * 64)
+        # Transformar con capa lineal
+        x = self.lin(lstm_out)  # (batch_size, 512 * 16 * 4)
+        x = x.view(-1, 512, 32, 8)  # Reorganizar a (batch_size, canales, altura, ancho)
 
-        # Reorganizar en la forma original (batch_size, 4, 512, 64)
-        x = x.view(-1, 4, 512, 64)
-    
-        # Usamos lstm_out, ya que contiene la secuencia completa de salidas del LSTM
-        #x_reconstructed = self.decoder_lin(lstm_out)
-
-        # Reorganizamos los datos para la forma deseada (batch_size, 4, 512, 57)
-        #x_reconstructed = x_reconstructed.view(-1, 4, 512, 57)
+        # Refinar con convoluciones transpuestas
+        x = self.decoder(x)  # Salida final: (batch_size, 4, 512, 64)
 
         return x
 
