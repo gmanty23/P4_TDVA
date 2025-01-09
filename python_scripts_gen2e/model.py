@@ -92,7 +92,9 @@ class Decoder(nn.Module):
         # Capa LSTM para procesar la representación latente
         self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
 
-        
+        # Capa lineal para expandir la salida del LSTM con las dimensiones originales
+        self.hidden_to_output = nn.Linear(256, 4*512*64)
+
         # self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 3))
 
         # self.dec0 = nn.ConvTranspose2d(in_channels=32, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
@@ -122,9 +124,15 @@ class Decoder(nn.Module):
         # x tiene la forma (batch_size, latent_dim), necesitamos convertirlo en una secuencia de longitud 57.
         x = x.unsqueeze(1) # Añadir una dimensión de secuencia (batch_size, 1, latent_dim)
         
-        # Pasamos el vector latente por el LSTM
-        lstm_out = self.lstm(x)
+    
+        lstm_out, _ = self.lstm(x) # Pasamos el vector latente por el LSTM
+        lstm_out = lstm_out[:, -1, :]  # Seleccionamos la última salida de la secuencia (batch_size, hidden_size)   
 
+        # Pasar por la capa lineal para proyectar a la dimensión total
+        x = self.hidden_to_output(lstm_out)    # (batch_size, 4 * 512 * 64)
+
+        # Reorganizar en la forma original (batch_size, 4, 512, 64)
+        x = x.view(-1, 4, 512, 64)
     
         # Usamos lstm_out, ya que contiene la secuencia completa de salidas del LSTM
         #x_reconstructed = self.decoder_lin(lstm_out)
@@ -132,7 +140,7 @@ class Decoder(nn.Module):
         # Reorganizamos los datos para la forma deseada (batch_size, 4, 512, 57)
         #x_reconstructed = x_reconstructed.view(-1, 4, 512, 57)
 
-        return lstm_out[0]
+        return x
 
 class VariationalAutoencoder(nn.Module):
     def __init__(self, latent_dims):
