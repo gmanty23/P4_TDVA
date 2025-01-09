@@ -27,7 +27,7 @@ vae = model.VariationalAutoencoder(latent_dims=latent_dims) # Llamamos al constr
 #vae = model_init(vae,modelo)
 #torch.save(vae.state_dict(), f"models/"+modelo+"/model.pth")
 graph = torch.load(f"python_scripts_gen2e/models/{modelo}/model.pth",map_location=torch.device('cpu'))
-vae.load_state_dict(graph) # Cargamos los parámetros de la red (del modelo seleccionado anteriormente)
+#vae.load_state_dict(graph) # Cargamos los parámetros de la red (del modelo seleccionado anteriormente)
 
 lr = 1e-4 # Learning rate
 beta = 0.00001 # (hiper)Parámetro de ajuste de la VLB mediante la divergencia KL

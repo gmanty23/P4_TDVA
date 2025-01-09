@@ -31,7 +31,7 @@ def model_init(vae,modelo):
     graph3 = torch.load(f"python_scripts_gen2e/models/{modelo3}/model.pth",map_location=torch.device('cpu'))
 
     # Cargamos en los pesos del vae con los de modelx-L y modelx-R: https://discuss.pytorch.org/t/loading-a-specific-layer-from-checkpoint/52725
-    with torch.no_grad():
+    '''with torch.no_grad():
         # Encoder conv1 -> La mitad de los pesos son ceros para mantener los canales separados a lo largo (profundo!) de la red
         # La primera mitad de los canales debería tener sólo info del canal L: la segunda, del canal R
         # La segunda dimensión son canales de entrada (primera mitad L, segunda mitad R), la primera son canales de salida (la mitad serán ceros)
@@ -204,7 +204,7 @@ def model_init(vae,modelo):
         vae.decoder.dec5.weight[512:1024,0:2,:,:] = torch.zeros(vae.decoder.dec5.weight[512:1024,0:2,:,:].size())
         vae.decoder.dec5.weight[512:1024,2:4,:,:].copy_(graphR.get('decoder.dec5.weight'))
         vae.decoder.dec5.bias[0:2].copy:(graphL.get('decoder.dec5.bias'))
-        vae.decoder.dec5.bias[2:4].copy:(graphR.get('decoder.dec5.bias'))
+        vae.decoder.dec5.bias[2:4].copy:(graphR.get('decoder.dec5.bias'))'''
 
     return vae
 

@@ -81,17 +81,18 @@ class Decoder(nn.Module):
     def __init__(self, latent_dims):
         super().__init__()
 
-        # Capa LSTM para procesar la representación latente
-        self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
-
         # Capa lineal para reconstruir la salida de la LSTM
         self.decoder_lin = nn.Sequential( # Asumo que nn.Sequential() define una serie de funciones que se aplicarán una tras otra 
-            nn.Linear(256, 128),
+            nn.Linear(latent_dims, 128),
             nn.ReLU(True), # ¿Qué significa el parámetro True en esta función ReLU?
             nn.Linear(128, 2*2*512*57),
             nn.ReLU(True)
         )
 
+        # Capa LSTM para procesar la representación latente
+        self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
+
+        
         # self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 3))
 
         # self.dec0 = nn.ConvTranspose2d(in_channels=32, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
@@ -119,19 +120,19 @@ class Decoder(nn.Module):
         # return x
 
         # x tiene la forma (batch_size, latent_dim), necesitamos convertirlo en una secuencia de longitud 57.
-        x = x.unsqueeze(1).repeat(1, 57, 1)  # Añadir una dimensión de secuencia (batch_size, 1, latent_dim)
+        x = x.unsqueeze(1) # Añadir una dimensión de secuencia (batch_size, 1, latent_dim)
         
         # Pasamos el vector latente por el LSTM
         lstm_out = self.lstm(x)
 
     
         # Usamos lstm_out, ya que contiene la secuencia completa de salidas del LSTM
-        x_reconstructed = self.decoder_lin(lstm_out)
+        #x_reconstructed = self.decoder_lin(lstm_out)
 
         # Reorganizamos los datos para la forma deseada (batch_size, 4, 512, 57)
-        x_reconstructed = x_reconstructed.view(-1, 4, 512, 57)
+        #x_reconstructed = x_reconstructed.view(-1, 4, 512, 57)
 
-        return x_reconstructed
+        return lstm_out[0]
 
 class VariationalAutoencoder(nn.Module):
     def __init__(self, latent_dims):
