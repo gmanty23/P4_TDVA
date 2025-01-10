@@ -10,11 +10,13 @@ import model
 
 from initialize_model import model_init
 
+import matplotlib.pyplot as plt 
+
 torch.set_default_dtype(torch.float32)
 
 torch.manual_seed(0)
 
-modelo = "model2" # Model to be trained
+modelo = "model1" # Model to be trained
 
 if modelo == "model1":
     latent_dims = 20
@@ -135,9 +137,16 @@ train_loader = DataLoader(x_train.astype('float32'), batch_size=batch_size, shuf
 #valid_loader = DataLoader(test_dataset.astype('float32'), batch_size=8, shuffle=True)
 global_validation_loss = 1e9
 
+train_losses = []
+reconstruction_errors = []
+kl_errors = []
+
 for epoch in range(num_epochs):
    train_loss, reconstruction_error, kl_error = train_epoch(vae, device, train_loader, optimizer)
    #val_loss, global_validation_loss = test_epoch(vae, device, valid_loader, global_validation_loss)
+   train_losses.append(train_loss)
+   reconstruction_errors.append(reconstruction_error)
+   kl_errors.append(kl_error)
 
    # Traza de época de entrenamiento
    print('\n EPOCH {}/{} \t train loss {:.3f} (recon error {:.3f}, kl error {:.3f}) \t'.format(epoch + 1,
@@ -160,4 +169,34 @@ for epoch in range(num_epochs):
                                                                                                               val_loss)) """
     
 
-torch.save(vae.state_dict(), f"python_scripts_gen2e/models/"+modelo+"/model.pth")
+torch.save(vae.state_dict(), f"python_scripts_gen2e/models/recurrente/"+modelo+"/model.pth")
+
+
+plt.figure(figsize=(8, 5))
+plt.plot(train_losses, label="Train Loss", color='blue')
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.title("Training Loss Curve")
+plt.legend()
+plt.grid()
+plt.savefig("train_loss_curve.png") 
+plt.show()
+
+plt.figure(figsize=(8, 5))
+plt.plot(reconstruction_errors, label="Reconstruction Error", color='orange')
+plt.xlabel("Epochs")
+plt.ylabel("Error")
+plt.title("Reconstruction Error Curve")
+plt.legend()
+plt.grid()
+plt.savefig("reconstruction_error_curve.png")  
+
+plt.figure(figsize=(8, 5))
+plt.plot(kl_errors, label="KL Error", color='green')
+plt.xlabel("Epochs")
+plt.ylabel("Error")
+plt.title("KL Error Curve")
+plt.legend()
+plt.grid()
+plt.savefig("kl_error_curve.png")  
+plt.show()
