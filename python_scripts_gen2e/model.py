@@ -107,17 +107,8 @@ class Decoder(nn.Module):
         self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
 
         # Capa lineal para mapear a un tensor inicial interpretable
-        self.lin = nn.Linear(256, 512 * 32 * 8)  # Salida inicial: (512 canales, 32x8 tamaño)
-        # Decodificación con convoluciones transpuestas
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1),  # (32x8) -> (64x16)
-            nn.ReLU(),
-            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),  # (64x16) -> (128x32)
-            nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),   # (128x32) -> (256x64)
-            nn.ReLU(),
-            nn.ConvTranspose2d(64, 4, kernel_size=(4,3), stride=(2,1), padding=1)  # (256x64) -> (512x64)
-        )
+        self.lin = nn.Linear(256, 4*512*64)  # Salida inicial: (512 canales, 32x8 tamaño)
+
 
 
        
@@ -144,8 +135,8 @@ class Decoder(nn.Module):
         lstm_out = lstm_out[:, -1, :]  # Seleccionamos la última salida de la secuencia (batch_size, hidden_size)   
 
         # Transformar con capa lineal
-        x = self.lin(lstm_out)  # (batch_size, 512 * 16 * 4)
-        x = x.view(-1, 512, 32, 8)  # Reorganizar a (batch_size, canales, altura, ancho)
+        x = self.lin(lstm_out)  # (batch_size, 4*512*64)
+        x = x.view(-1, 4, 512, 64)  # Reorganizar a (batch_size, canales, altura, ancho)
 
         # Refinar con convoluciones transpuestas
         x = self.decoder(x)  # Salida final: (batch_size, 4, 512, 64)
