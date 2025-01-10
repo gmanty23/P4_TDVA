@@ -138,9 +138,6 @@ class Decoder(nn.Module):
         x = self.lin(lstm_out)  # (batch_size, 4*512*64)
         x = x.view(-1, 4, 512, 64)  # Reorganizar a (batch_size, canales, altura, ancho)
 
-        # Refinar con convoluciones transpuestas
-        x = self.decoder(x)  # Salida final: (batch_size, 4, 512, 64)
-
         return x
 
 class VariationalAutoencoder(nn.Module):
