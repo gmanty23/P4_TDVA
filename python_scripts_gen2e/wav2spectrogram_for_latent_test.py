@@ -100,14 +100,16 @@ caseRoute = [["measured","E0"],["interpolated","E0"],["measured","A0"],["interpo
 # Inicializamos el diccionario de valores máximos y mínimos (que más tarde guardaremos)
 min_max_dict = dict()
 min_max_path_file = r"inputs/min_max_test/min_max_values.pkl" # Path donde guardaremos los valores min-max de los espectrogramas generados
-
+caseRoute = ["measured","E0"]
 for i in caseRoute:
-    case = i[0]
-    route = i[1]
-
+    '''case = i[0]
+    route = i[1]'''
+    case = "measured"
+    route = "E0"
+    #spectrograms_path+"_L_"+case    r"inputs/spectrograms_"+'fireball'+"_L_"+"measured"
     # Esto se configura solo (no tocar)
-    wavs_path = r"waterdrop_billinear/"+route+"_only/"+case
-    spectrograms_path = r"inputs/spectrograms_"+route
+    wavs_path = r"python_scripts_gen2e\fireball"
+    spectrograms_path = r"python_scripts_gen2e\inputs/spectrograms_"+'fireball'
 
     #%% Carga de espectrogramas
 
