@@ -10,7 +10,8 @@ import torch
 from sklearn import preprocessing
 from tqdm import tqdm
 import scipy
-
+from scipy import io as scipyio
+from scipy.io import wavfile as scipyiowavfile
 import model
 
 # Sirve para cargar los espectrogramas junto con su path
@@ -81,7 +82,7 @@ def load_wavs(wavs_path):
     for root, _, file_names in os.walk(wavs_path):
         for file_name in file_names:
             file_path = os.path.join(root, file_name).replace("\\","/")
-            data = scipy.io.wavfile.read(file_path, mmap=False)  # (n_bins, n_frames, 1)
+            data = scipyiowavfile.read(file_path, mmap=False)  # (n_bins, n_frames, 1)
             dataset.append(data[1])
             Fs = data[0] # Quedará la frecuencia de muestreo del último audio extraido (todos los audios deben tener la misma Fs)
             file_paths.append(file_path)
@@ -99,9 +100,9 @@ def serialize(save_path, name, x_modpha):
 caseRoute = [["measured","E0"],["interpolated","E0"],["measured","A0"],["interpolated","A0"]]
 # Inicializamos el diccionario de valores máximos y mínimos (que más tarde guardaremos)
 min_max_dict = dict()
-min_max_path_file = r"inputs/min_max_test/min_max_values.pkl" # Path donde guardaremos los valores min-max de los espectrogramas generados
+min_max_path_file = r"python_scripts_gen2e\inputs/min_max_test_fireball/min_max_values.pkl" # Path donde guardaremos los valores min-max de los espectrogramas generados
 caseRoute = ["measured","E0"]
-for i in caseRoute:
+for i in {1}:
     '''case = i[0]
     route = i[1]'''
     case = "measured"
