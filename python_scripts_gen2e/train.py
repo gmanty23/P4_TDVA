@@ -28,12 +28,13 @@ else:
 vae = model.VariationalAutoencoder(latent_dims=latent_dims) # Llamamos al constructor y creamos un objeto VAE
 #vae = model_init(vae,modelo)
 #torch.save(vae.state_dict(), f"models/"+modelo+"/model.pth")
-graph = torch.load(f"python_scripts_gen2e/models/{modelo}/model.pth",map_location=torch.device('cpu'))
-#vae.load_state_dict(graph) # Cargamos los parámetros de la red (del modelo seleccionado anteriormente)
+#graph = torch.load(f"python_scripts_gen2e/models/recurrente/"+modelo+"/model.pth",map_location=torch.device('cpu'))
+graph = torch.load(f"python_scripts_gen2e/models/fireballEntrenoBaseSinLogica3/"+modelo+"/model.pth",map_location=torch.device('cpu'))
+vae.load_state_dict(graph) # Cargamos los parámetros de la red (del modelo seleccionado anteriormente)
 
-lr = 1e-4 # Learning rate
+lr = 2e-4 # Learning rate
 beta = 0.00001 # (hiper)Parámetro de ajuste de la VLB mediante la divergencia KL
-num_epochs = 300 # Iteraciones de entrenamiento
+num_epochs = 1000 # Iteraciones de entrenamiento
 batch_size = 8
 
 prefix_name = 'multilateration_model_3DVae_4ls'
@@ -127,8 +128,8 @@ def load_spectrograms(spectrograms_path):
     return x_train, x_test 
 
 
-x_train_L, _ = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train_L")
-x_train_R, _ = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train_R")
+x_train_L, _ = load_spectrograms("python_scripts_gen2e\inputs\spectrograms_fireball_L_measured")
+x_train_R, _ = load_spectrograms("python_scripts_gen2e\inputs\spectrograms_fireball_R_measured")
 x_train = np.concatenate((x_train_L,x_train_R),axis=2) # Array numpy => (nº audios, (modL phaL modR phaR), freq bins, time windows)
 x_train = np.squeeze(x_train,axis=1)
 #test_dataset, _ = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train") # spectrograms_test
@@ -169,7 +170,7 @@ for epoch in range(num_epochs):
                                                                                                               val_loss)) """
     
 
-torch.save(vae.state_dict(), f"python_scripts_gen2e/models/recurrente/"+modelo+"/model.pth")
+torch.save(vae.state_dict(), f"python_scripts_gen2e/models/fireballEntrenoBaseSinLogica4/"+modelo+"/model.pth")
 
 
 plt.figure(figsize=(8, 5))

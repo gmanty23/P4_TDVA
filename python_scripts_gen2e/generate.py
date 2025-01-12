@@ -68,7 +68,9 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
                              centered=True,
                              window=stft.stft.cosine,
                              padding=0,
-                             outlength=32722)
+                             #outlength=32722)
+                             #outlength=32722*4)
+                             outlength=176000)
     # Re-normalización
     sigMax, sigMin = signal.max(),signal.min()
     signal = (signal-sigMin)/(sigMax-sigMin)
@@ -77,7 +79,7 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
     # Guardado de archivos generados 
     name = os.path.split(name)[-1] + ".wav"
     #save_path = os.path.join("outputs", modelo, predecir, name)
-    save_path = os.path.join("python_scripts_gen2e","outputs",modelo,"felizViernes", name)
+    save_path = os.path.join("python_scripts_gen2e","outputs",modelo,"tacoTuesday", name)
 
     sf.write(save_path, signal, 48000)
 
@@ -114,7 +116,7 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 # Se inicializan los modelos. Si cambias al de 4 dimensiones, hay que cambiar tanto path como latent_dims
 vae = model.VariationalAutoencoder(latent_dims=latent_dims)
 #vae = model_init(vae,modelo)
-graph = torch.load(f"python_scripts_gen2e/models/recurrente/{modelo}/model.pth",map_location=torch.device('cpu'))
+graph = torch.load(f"python_scripts_gen2e/models/fireballEntrenoBaseSinLogica4/"+modelo+"/model.pth",map_location=torch.device('cpu'))
 vae.load_state_dict(graph)
 vae.to(device)
 vae.eval() # Modo evaluación (no se pueden cambiar parámetros)
@@ -166,5 +168,5 @@ with torch.no_grad():  # No need to track the gradients
         name = '_'.join(nameL.split('_')[0:-1])
         generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name)
 
-with open(f'python_scripts_gen2e/models/recurrente/{modelo}/latent_spaces.npy', 'wb') as f:
+with open(f'python_scripts_gen2e/models/fireballEntrenoBaseSinLogica4/"+modelo+"/latent_spaces.npy', 'wb') as f:
     np.save(f, latent_space)

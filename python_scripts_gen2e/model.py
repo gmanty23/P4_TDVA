@@ -107,17 +107,28 @@ class Decoder(nn.Module):
         self.lstm = nn.LSTM(latent_dims, hidden_size=256, num_layers= 1,batch_first=True)
 
         # Capa lineal para mapear a un tensor inicial interpretable
-        self.lin = nn.Linear(256, 512 * 32 * 8)  # Salida inicial: (512 canales, 32x8 tamaño)
+        #self.lin = nn.Linear(256, 256 * 32 * 8)  # Salida inicial: (512 canales, 32x8 tamaño)
+        self.lin = nn.Linear(256, 4 * 512 * 176)  # Salida inicial: (512 canales, 32x8 tamaño)
         # Decodificación con convoluciones transpuestas
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1),  # (32x8) -> (64x16)
+        '''        self.resize = nn.Sequential(
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),  # (32x8) -> (64x16)
             nn.ReLU(),
-            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),  # (64x16) -> (128x32)
+            #Capa 2: (64x16) -> (128x32)
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),  # (64x16) -> (128x32)
             nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),   # (128x32) -> (256x64)
+            #Capa 3: (128x32) -> (256x64)
+            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),   # (128x32) -> (256x64)
             nn.ReLU(),
-            nn.ConvTranspose2d(64, 4, kernel_size=(4,3), stride=(2,1), padding=1)  # (256x64) -> (512x64)
-        )
+            #Capa 4: (256x64) -> (512x128)
+            nn.ConvTranspose2d(32, 4, kernel_size=(4,1), stride=(2,3), padding=(1,7)),   # (128x32) -> (512x176)
+            nn.ReLU(),
+            #Capa 5: (512x128) -> (512x174)
+            #nn.ConvTranspose2d(32, 4, kernel_size=(1, 3), stride=(1, 2), padding=(0, 1)),
+            #nn.Upsample(size=(512, 174), mode='bilinear', align_corners=False),
+            #nn.ReLU(),
+            
+            #nn.ConvTranspose2d(64, 4, kernel_size=(4,3), stride=(2,1), padding=1)  # (256x64) -> (512x64)
+        )'''
 
 
        
@@ -145,10 +156,10 @@ class Decoder(nn.Module):
 
         # Transformar con capa lineal
         x = self.lin(lstm_out)  # (batch_size, 512 * 16 * 4)
-        x = x.view(-1, 512, 32, 8)  # Reorganizar a (batch_size, canales, altura, ancho)
+        x = x.view(-1, 4, 512, 176)  # Reorganizar a (batch_size, canales, altura, ancho)
 
         # Refinar con convoluciones transpuestas
-        x = self.decoder(x)  # Salida final: (batch_size, 4, 512, 64)
+        #x = self.resize(x)  # Salida final: (batch_size, 4, 512, 64)
 
         return x
 
