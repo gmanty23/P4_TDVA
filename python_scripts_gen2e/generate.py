@@ -79,7 +79,7 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
     # Guardado de archivos generados 
     name = os.path.split(name)[-1] + ".wav"
     #save_path = os.path.join("outputs", modelo, predecir, name)
-    save_path = os.path.join("python_scripts_gen2e","outputs",modelo,"tacoTuesday", name)
+    save_path = os.path.join("python_scripts_gen2e","outputs",modelo,"tonyHawkProSkaterIIThursday", name)
 
     sf.write(save_path, signal, 48000)
 
@@ -99,7 +99,7 @@ else:
 
 # Aquí me quedo con los datos de train y test,
 # luego trabajo normalmente con test pero se pueden probar ambos
-train_dataset_L, train_paths_L = load_spectrograms("python_scripts_gen2e\inputs\spectrograms_fireball_L_measured")
+'''train_dataset_L, train_paths_L = load_spectrograms("python_scripts_gen2e\inputs\spectrograms_fireball_L_measured")
 train_paths_L = [os.path.split(i)[-1].split('.pkl')[0] for i in train_paths_L] # ¿Le estamos quitando la extensión de archivo a las rutas de los espectrogramas?
 test_dataset_L, test_paths_L = load_spectrograms("python_scripts_gen2e\inputs\spectrograms_fireball_L_measured")
 test_paths_L = [os.path.split(i)[-1].split('.pkl')[0] for i in test_paths_L]
@@ -107,7 +107,11 @@ train_dataset_R, train_paths_R = load_spectrograms("python_scripts_gen2e\inputs\
 train_paths_R = [os.path.split(i)[-1].split('.pkl')[0] for i in train_paths_R]
 test_dataset_R, test_paths_R = load_spectrograms("python_scripts_gen2e\inputs\spectrograms_fireball_R_measured")
 test_paths_R = [os.path.split(i)[-1].split('.pkl')[0] for i in test_paths_R]
-
+'''
+test_dataset_L, test_paths_L = load_spectrograms(r"python_scripts_gen2e\inputs\tonyHawkProSkaterIIThursdayL")
+test_paths_L = [os.path.split(i)[-1].split('.pkl')[0] for i in test_paths_L]
+test_dataset_R, test_paths_R = load_spectrograms(r"python_scripts_gen2e\inputs\tonyHawkProSkaterIIThursdayR")
+test_paths_R = [os.path.split(i)[-1].split('.pkl')[0] for i in test_paths_R]
 #dvfzvf
 # %% Carga del modelo de autoencoder variacional
 
@@ -151,6 +155,8 @@ with torch.no_grad():  # No need to track the gradients
     for xL, pathL, xR, pathR in tqdm(loop): # La generación de registros la hace espectrograma a espectrograma (no agrupados en tensores)
         nameL = os.path.split(pathL)[-1]
         nameR = os.path.split(pathR)[-1]
+        nameR = 'fireball_E-10_A180_SNR49_R'
+        nameL = 'fireball_E-10_A180_SNR49_L'
         min_max_L = min_max_dict[nameL]
         min_max_R = min_max_dict[nameR]
         xL = xL[np.newaxis, ...]
