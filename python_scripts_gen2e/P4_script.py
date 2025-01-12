@@ -56,20 +56,68 @@
 #     # Decode data
 #     x_hat = vae(x)
 
-import torch
+# import torch
 
-def check_cuda_and_pytorch_version():
-    print("Versión de PyTorch instalada:", torch.__version__)
-    print("Versión de CUDA utilizada por PyTorch:", torch.version.cuda)
-    print("PyTorch detecta GPU:", torch.cuda.is_available())
+# def check_cuda_and_pytorch_version():
+#     print("Versión de PyTorch instalada:", torch.__version__)
+#     print("Versión de CUDA utilizada por PyTorch:", torch.version.cuda)
+#     print("PyTorch detecta GPU:", torch.cuda.is_available())
     
-    if torch.cuda.is_available():
-        print("Nombre de la GPU:", torch.cuda.get_device_name(0))
-        print("Número de GPUs disponibles:", torch.cuda.device_count())
-    else:
-        print("No se detectó ninguna GPU. Verifica la instalación de CUDA y los drivers de NVIDIA.")
+#     if torch.cuda.is_available():
+#         print("Nombre de la GPU:", torch.cuda.get_device_name(0))
+#         print("Número de GPUs disponibles:", torch.cuda.device_count())
+#     else:
+#         print("No se detectó ninguna GPU. Verifica la instalación de CUDA y los drivers de NVIDIA.")
 
-if __name__ == "__main__":
-    check_cuda_and_pytorch_version()
+# if __name__ == "__main__":
+#     check_cuda_and_pytorch_version()
 
 
+import numpy as np
+import pickle
+import os
+
+# Construir rutas de forma segura
+base_path = "python_scripts_gen2e/inputs"
+path_derecha_L = os.path.join(base_path, "spectrograms_fireball_L_measured", "fireball_E0_A90_SNR55_L.pkl")
+path_izquierda_L = os.path.join(base_path, "spectrograms_fireball_L_measured", "fireball_E0_A270_SNR55_L.pkl")
+path_derecha_R = os.path.join(base_path, "spectrograms_fireball_R_measured", "fireball_E0_A90_SNR55_R.pkl")
+path_izquierda_R = os.path.join(base_path, "spectrograms_fireball_R_measured", "fireball_E0_A270_SNR55_R.pkl")
+
+# Cargar archivos
+with open(path_derecha_L, "rb") as archivo:
+    derecha_L = pickle.load(archivo)
+with open(path_izquierda_L, "rb") as archivo:
+    izquierda_L = pickle.load(archivo)
+with open(path_derecha_R, "rb") as archivo:
+    derecha_R = pickle.load(archivo)
+with open(path_izquierda_R, "rb") as archivo:
+    izquierda_R = pickle.load(archivo)
+
+
+
+
+
+mitad = derecha_L.shape[2] // 2  
+
+# Tomamos la primera mitad de derecha_L y la segunda mitad de izquierda_L
+concat_L = np.concatenate((derecha_L[:, :, :mitad], izquierda_L[:, :, mitad:]), axis=2)
+# Tomamos la primera mitad de derecha_R y la segunda mitad de izquierda_R
+concat_R = np.concatenate((derecha_R[:, :, :mitad], izquierda_R[:, :, mitad:]), axis=2)
+
+
+# Verificar las nuevas dimensiones
+print(f"Dimensiones de concatenado_L: {concat_L.shape}")  # Debería ser (2, 512, 352)
+print(f"Dimensiones de concatenado_R: {concat_R.shape}")  # Debería ser (2, 512, 352)
+
+# Guardar los resultados en un nuevo archivo pkl
+output_path_L = r"concatenado_L.pkl"
+output_path_R = r"concatenado_R.pkl"
+
+with open(output_path_L, "wb") as archivo:
+    pickle.dump(concat_L, archivo)
+
+with open(output_path_R, "wb") as archivo:
+    pickle.dump(concat_R, archivo)
+
+print(f"Archivos concatenados guardados: {output_path_L}, {output_path_R}")
