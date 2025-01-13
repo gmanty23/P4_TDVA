@@ -68,7 +68,7 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
                              centered=True,
                              window=stft.stft.cosine,
                              padding=0,
-                             outlength=32722)
+                             outlength=32722*4)
     # Re-normalización
     sigMax, sigMin = signal.max(),signal.min()
     signal = (signal-sigMin)/(sigMax-sigMin)
@@ -77,7 +77,7 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
     # Guardado de archivos generados 
     name = os.path.split(name)[-1] + ".wav"
     #save_path = os.path.join("outputs", modelo, predecir, name)
-    save_path = os.path.join("python_scripts_gen2e/outputs/felizMiercoles", name)
+    save_path = os.path.join("python_scripts_gen2e/outputs/felizMiercoles2", name)
 
     sf.write(save_path, signal, 48000)
 
