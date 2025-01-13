@@ -77,13 +77,13 @@ def generate_audio_from_spectrogram(predicted_data, min_max_L, min_max_R, name):
     # Guardado de archivos generados 
     name = os.path.split(name)[-1] + ".wav"
     #save_path = os.path.join("outputs", modelo, predecir, name)
-    save_path = os.path.join("python_scripts_gen2e/outputs/felizJueves", predecir, name)
+    save_path = os.path.join("python_scripts_gen2e/outputs/felizMiercoles", name)
 
     sf.write(save_path, signal, 48000)
 
 
 # %% Decidir modelo
-modelo = "model2"
+modelo = "model1"
 
 if modelo == "model1":
     latent_dims = 20
@@ -97,13 +97,13 @@ else:
 
 # Aquí me quedo con los datos de train y test,
 # luego trabajo normalmente con test pero se pueden probar ambos
-train_dataset_L, train_paths_L = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train_L")
+train_dataset_L, train_paths_L = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_fireball_L_measured")
 train_paths_L = [os.path.split(i)[-1].split('.pkl')[0] for i in train_paths_L] # ¿Le estamos quitando la extensión de archivo a las rutas de los espectrogramas?
-test_dataset_L, test_paths_L = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train_L")
+test_dataset_L, test_paths_L = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_fireball_L_measured")
 test_paths_L = [os.path.split(i)[-1].split('.pkl')[0] for i in test_paths_L]
-train_dataset_R, train_paths_R = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train_R")
+train_dataset_R, train_paths_R = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_fireball_R_measured")
 train_paths_R = [os.path.split(i)[-1].split('.pkl')[0] for i in train_paths_R]
-test_dataset_R, test_paths_R = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_train_R")
+test_dataset_R, test_paths_R = load_spectrograms("python_scripts_gen2e/inputs/spectrograms_fireball_R_measured")
 test_paths_R = [os.path.split(i)[-1].split('.pkl')[0] for i in test_paths_R]
 
 #dvfzvf
@@ -123,7 +123,7 @@ vae.eval() # Modo evaluación (no se pueden cambiar parámetros)
 # %% Carga de valores mínimo y máximo originales de la señal para su posterior desnormalización
 
 # Aquí recupero los valores min max de fase y amplitud
-with open(r"python_scripts_gen2e/inputs/min_max/min_max_values.pkl", "rb") as input_file: # ¿Qué aspecto tienen las entradas de min_max_values.pkl?
+with open(r"python_scripts_gen2e\inputs\min_max_test_fireball\min_max_values.pkl", "rb") as input_file: # ¿Qué aspecto tienen las entradas de min_max_values.pkl?
     min_max_dict = pickle.load(input_file) # Es min_max_dict un diccionario que contiene los valores máximo y mínimo de cada espectrograma??
     min_max_dict = {os.path.split(k)[-1]: v for k, v in min_max_dict.items()}
 

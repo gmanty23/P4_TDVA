@@ -29,12 +29,12 @@ else:
 vae = model.VariationalAutoencoder(latent_dims=latent_dims) # Llamamos al constructor y creamos un objeto VAE
 #vae = model_init(vae,modelo)
 #torch.save(vae.state_dict(), f"models/"+modelo+"/model.pth")
-graph = torch.load(f"python_scripts_gen2e/models/{modelo}/model.pth",map_location=torch.device('cpu'))
+#graph = torch.load(f"python_scripts_gen2e/models/{modelo}/model.pth",map_location=torch.device('cpu'))
 #vae.load_state_dict(graph) # Cargamos los parámetros de la red (del modelo seleccionado anteriormente)
 
-lr = 1e-4 # Learning rate
+lr = 3e-4 # Learning rate
 beta = 0.00001 # (hiper)Parámetro de ajuste de la VLB mediante la divergencia KL
-num_epochs = 300 # Iteraciones de entrenamiento
+num_epochs = 100 # Iteraciones de entrenamiento
 batch_size = 8
 
 prefix_name = 'multilateration_model_3DVae_4ls'
