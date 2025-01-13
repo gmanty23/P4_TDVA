@@ -167,7 +167,7 @@ for epoch in range(num_epochs):
                                                                                                               val_loss)) """
     
 
-torch.save(vae.state_dict(), f"python_scripts_gen2e/models/fireball_VAE/"+modelo+"/model.pth")
+torch.save(vae.state_dict(), f"python_scripts_gen2e/models/{modelo}/model.pth")
 
 plt.figure(figsize=(8, 5))
 plt.plot(train_losses, label="Train Loss", color='blue')

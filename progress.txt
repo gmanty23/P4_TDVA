@@ -622,3 +622,4 @@
  EPOCH 6/300 	 train loss 10915.746 (recon error 10915.744, kl error 0.002) 	
  EPOCH 7/300 	 train loss 10828.024 (recon error 10828.022, kl error 0.002) 	
  EPOCH 8/300 	 train loss 10725.956 (recon error 10725.954, kl error 0.003) 	
+ EPOCH 1/300 	 train loss 15816.778 (recon error 15815.121, kl error 1.658) 	
