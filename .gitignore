@@ -22,3 +22,4 @@ python_scripts_gen2e/models/
 python_scripts_gen2e/outputs/
 python_scripts_gen2e/P4_TDVA_sinCUDA/
 python_scripts_gen2e/waterdrop_billinear/
+python_scripts_gen2e/fireball/

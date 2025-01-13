@@ -26,8 +26,8 @@ class VariationalEncoder(nn.Module):
         self.conv6 = nn.Conv2d(in_channels=32*2, out_channels=32, kernel_size=(1, 1), stride=(1, 1))
 
         # distribution parameters
-        self.mu = nn.Linear(32 * 31 * 3, latent_dim)
-        self.var = nn.Linear(32 * 31 * 3, latent_dim)
+        self.mu = nn.Linear(32*31*10, latent_dim)
+        self.var = nn.Linear(32*31*10, latent_dim)
 
         self.N = torch.distributions.Normal(0, 1)
         #self.N.loc = self.N.loc.cuda()  # hack to get sampling on the GPU
@@ -67,11 +67,11 @@ class Decoder(nn.Module):
         self.decoder_lin = nn.Sequential( # Asumo que nn.Sequential() define una serie de funciones que se aplicarán una tras otra 
             nn.Linear(latent_dims, 128),
             nn.ReLU(True), # ¿Qué significa el parámetro True en esta función ReLU?
-            nn.Linear(128, 32 * 31 * 3),
+            nn.Linear(128, 32*31*10),
             nn.ReLU(True)
         )
 
-        self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 3))
+        self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, 31, 10))
 
         self.dec0 = nn.ConvTranspose2d(in_channels=32, out_channels=32*2, kernel_size=(1, 1), stride=(1, 1))
         self.batch0 = nn.BatchNorm2d(32*2)
